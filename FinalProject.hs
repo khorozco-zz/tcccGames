@@ -34,3 +34,8 @@ main = do
 -- can we loop in main?
 -- make the board a list? a list of lists?
 -- how to associate grid with actual spot, so A2 with bottom middle square
+
+-- First Steps:
+-- get skeleton of one pile per game
+-- write code that creates the board per game (checkers chess has things)
+-- break up work: both do tictactoe board, one do other three boards, one get more depth on ttt

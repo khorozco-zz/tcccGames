@@ -1,3 +1,6 @@
+module TicTacToe
+( initialBoard
+) where
 
 data Players = X
              | O
@@ -5,8 +8,10 @@ data Players = X
 
 type Square = Either Char Players
 
-initialBoard :: (String a) => a
-initialBoard = undefined
+main = undefined
+
+initialBoard :: IO ()
+initialBoard = putStr $ unlines ["Let's begin!","   +---+---+---+"," 3 |   |   |   |","   +---+---+---+"," 2 |   |   |   |","   +---+---+---+"," 1 |   |   |   |","   +---+---+---+","     A   B   C  "]
 
 --   +---+---+---+
 -- 3 |   |   |   |
@@ -15,4 +20,4 @@ initialBoard = undefined
 --   +---+---+---+
 -- 1 |   |   |   |
 --   +---+---+---+
---     A   B   C 
+--     A   B   C  

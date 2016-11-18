@@ -12,7 +12,7 @@
 -- $ ghc --make FinalProject, first time only
 -- $ ./FinalProject
 
-import TicTacToe
+--import TicTacToe
 data Players = X
              | O
              | E
@@ -23,9 +23,9 @@ board = undefined
 
 main :: IO ()
 main = do
-     putStrLn "What game do you want to play? \n A: Tic-Tac-Toe \n B: Connect Four \n C: Checkers \n D: Chess \n"
+     putStrLn "What game do you want to play? \n A: Tic-Tac-Toe \n B: Connect Four \n C: Checkers \n D: Chess"
      gameChoice <- getLine
-     putStrLn $ "Let's begin!"
+     putStr $ unlines ["Let's begin!","   +---+---+---+"," 3 |   |   |   |","   +---+---+---+"," 2 |   |   |   |","   +---+---+---+"," 1 |   |   |   |","   +---+---+---+","     A   B   C  "]
 
 -- Next Steps:
 -- create initial board

@@ -25,7 +25,8 @@ main :: IO ()
 main = do
      putStrLn "What game do you want to play? \n A: Tic-Tac-Toe \n B: Connect Four \n C: Checkers \n D: Chess"
      gameChoice <- getLine
-     initialBoard
+     putStrLn "Let's begin!"
+     createBoardTTT
 
 -- Next Steps:
 -- create initial board

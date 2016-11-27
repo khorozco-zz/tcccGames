@@ -74,8 +74,8 @@ switchPlayers PlayerX = PlayerO
 switchPlayers PlayerO = PlayerX
 
 
-checkOpenSquare :: Board -> String -> Either String Int
-checkOpenSquare xss s  = case reads s of
+checkFreeSquare :: Board -> String -> Either String Int
+checkFreeSquare xss s  = case reads s of
 
     [(n, "")] -> check n
     _         -> Left "Error: Please enter an integer"
@@ -88,26 +88,26 @@ checkOpenSquare xss s  = case reads s of
 
             where (row, col) = getCoordinates n xss
 
-askInput :: Players -> Board -> IO ()
-askInput p board = do
+getInput :: Players -> Board -> IO ()
+getInput p board = do
 
     putStrLn $ displayBoard board
     putStrLn $ show p ++ ", make your move"
 
     putStr $ "(Enter number 1-" ++ show (length board ^ 2) ++ "): \n"
-    number <- getLine
+    move1Num <- getLine
 
-    case checkOpenSquare board number of
+    case checkFreeSquare board move1Num of
 
-        Left s  -> putStrLn ("Invalid input: " ++ s) >> gameStep p board
+        Left s  -> putStrLn ("Invalid input: " ++ s) >> gameStatus p board
 
         Right n -> let cell = fromPlayers p
                        next = switchPlayers p
 
-                   in gameStep next (fillSquare board n cell)
+                   in gameStatus next (fillSquare board n cell)
 
-gameStep :: Players -> Board -> IO ()
-gameStep p board = case checkWinner board of
+gameStatus :: Players -> Board -> IO ()
+gameStatus p board = case checkWinner board of
 
     Just winner -> do
 
@@ -119,7 +119,7 @@ gameStep p board = case checkWinner board of
             then do
                 putStrLn $ displayBoard board
                 putStrLn "It's a draw"
-        else askInput p board
+        else getInput p board
 
 startBoard :: Int -> Board
 startBoard x = replicate x (replicate x Empty)
@@ -135,4 +135,4 @@ boardSize = 3
 main :: IO ()
 main = do
     initialBoard
-    gameStep PlayerX (startBoard boardSize)
+    gameStatus PlayerX (startBoard boardSize)

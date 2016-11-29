@@ -82,8 +82,8 @@ nth n f (x:xs) = x : nth (n - 1) f xs
 
 fillSquare :: Board -> Int -> Square -> Board
 fillSquare xss n s = nth (row+(boardSize - 2)) (nth col (const s)) xss
-
-    where (row, col) = getCoordinates n xss
+    -- if row 7 of selected col is filled, recursively check higher rows
+    where (row,col) = getCoordinates n xss
 
 -- create function that fills squares after checking all rows
 
@@ -93,16 +93,16 @@ gameOver = all (notElem Empty)
 checkOpenSquare :: Board -> String -> Either String Int
 checkOpenSquare xss s  = case reads s of
 
-    [(n, "")] -> check n
+    [(colNumber, "")] -> check colNumber
     _         -> Left "Error: Please enter an integer"
 
-    where check n
+    where check colNumber
             -- change n parameters here to modify indices?
-            | n < 1 || n > length xss  = Left "Please enter integer in range"
+            | colNumber < 1 || colNumber > length xss  = Left "Please enter integer in range"
             | xss !! 1 !! col /= Empty = Left "Square already taken"
-            | otherwise                = Right n
+            | otherwise                = Right colNumber
 
-            where (row, col) = getCoordinates n xss
+            where (row, col) = getCoordinates colNumber xss
 
 askInput :: Players -> Board -> IO ()
 askInput p board = do
@@ -111,9 +111,9 @@ askInput p board = do
     putStrLn $ show p ++ ", make your move"
 
     putStr $ "(Enter number 1-" ++ show (length board) ++ "): \n"
-    number <- getLine
+    colNumber <- getLine
 
-    case checkOpenSquare board number of
+    case checkOpenSquare board colNumber of
 
         Left s  -> putStrLn ("Invalid input: " ++ s) >> gameStep p board
 

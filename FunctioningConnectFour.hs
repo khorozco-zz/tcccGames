@@ -28,13 +28,16 @@ type Board = [[Square]]
 -- add last | to this function?
 displayBoard :: Board -> String
 displayBoard xs = unlines
-             . surround vertex . map (concat . surround line . map show) $ xs
+             . surround vertex . map (concat . surround' line . map show) $ xs
     where line = "|"
           vertex = "+---+---+---+---+---+---+---" ++ "+"
 
 surround :: a -> [a] -> [a]
 surround x ys = x : intersperse x ys ++ [x]
 -- returns [x,ys[1],x,ys[2],x,ys[3]]
+
+surround' :: a -> [a] -> [a]
+surround' x ys = x : intersperse x ys
 
 -- players
 data Players = PlayerX | PlayerO deriving (Eq)
@@ -69,17 +72,20 @@ checkWinner yss = asum
                               else Nothing
 
 getCoordinates :: Int -> Board -> (Int, Int)
-getCoordinates n = divMod (n - 1) . length
+getCoordinates n = divMod (n-1) . length
 
+-- finding the nth value in a list
 nth :: Int -> (a -> a) -> [a] -> [a]
 nth _ _ [] = []
 nth 0 f (x:xs) = f x : xs
 nth n f (x:xs) = x : nth (n - 1) f xs
 
 fillSquare :: Board -> Int -> Square -> Board
-fillSquare xss n s = nth row (nth col (const s)) xss
+fillSquare xss n s = nth (row+(boardSize - 2)) (nth col (const s)) xss
 
     where (row, col) = getCoordinates n xss
+
+-- create function that fills squares after checking all rows
 
 gameOver :: Board -> Bool
 gameOver = all (notElem Empty)
@@ -92,9 +98,9 @@ checkOpenSquare xss s  = case reads s of
 
     where check n
             -- change n parameters here to modify indices?
-            | n < 1 || n > (length xss) * 7 = Left "Please enter integer in range"
-            | xss !! row !! col /= Empty  = Left "Square already taken"
-            | otherwise                   = Right n
+            | n < 1 || n > length xss  = Left "Please enter integer in range"
+            | xss !! 1 !! col /= Empty = Left "Square already taken"
+            | otherwise                = Right n
 
             where (row, col) = getCoordinates n xss
 
@@ -104,7 +110,7 @@ askInput p board = do
     putStrLn $ displayBoard board
     putStrLn $ show p ++ ", make your move"
 
-    putStr $ "(Enter number 1-" ++ show (length board * 7) ++ "): \n"
+    putStr $ "(Enter number 1-" ++ show (length board) ++ "): \n"
     number <- getLine
 
     case checkOpenSquare board number of
@@ -133,7 +139,7 @@ gameStep p board = case checkWinner board of
 
 -- length of board
 boardSize :: Int
-boardSize = 7
+boardSize = 8
 
 main :: IO ()
 main = do

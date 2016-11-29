@@ -1,7 +1,15 @@
-module TicTacToe where
+module ConnectFour where
 
 import Data.List (transpose, intersperse)
 import Data.Foldable (asum)
+
+-- initial board creation
+initialBoard :: IO ()
+initialBoard = putStr $ unlines ["\n",
+                                "Let's begin!"]
+
+startBoard :: Int -> Board
+startBoard x = replicate (x-1) (replicate x Empty)
 
 -- datatype for gameboard squares
 data Square = X
@@ -17,15 +25,35 @@ instance Show Square where
 -- the gameboard
 type Board = [[Square]]
 
+-- add last | to this function?
 displayBoard :: Board -> String
 displayBoard xs = unlines
              . surround vertex . map (concat . surround line . map show) $ xs
     where line = "|"
-          vertex = "+---+---+---" ++ "+"
+          vertex = "+---+---+---+---+---+---+---" ++ "+"
 
 surround :: a -> [a] -> [a]
 surround x ys = x : intersperse x ys ++ [x]
 -- returns [x,ys[1],x,ys[2],x,ys[3]]
+
+-- players
+data Players = PlayerX | PlayerO deriving (Eq)
+
+instance Show Players where
+    show PlayerX = "Player X"
+    show PlayerO = "Player O"
+
+toPlayers :: Square -> Players
+toPlayers X = PlayerX
+toPlayers O = PlayerO
+
+fromPlayers :: Players -> Square
+fromPlayers PlayerX = X
+fromPlayers PlayerO = O
+
+switchPlayers :: Players -> Players
+switchPlayers PlayerX = PlayerO
+switchPlayers PlayerO = PlayerX
 
 checkWinner :: Board -> Maybe Players
 checkWinner yss = asum
@@ -56,25 +84,6 @@ fillSquare xss n s = nth row (nth col (const s)) xss
 gameOver :: Board -> Bool
 gameOver = all (notElem Empty)
 
-data Players = PlayerX | PlayerO deriving (Eq)
-
-instance Show Players where
-    show PlayerX = "Player X"
-    show PlayerO = "Player O"
-
-toPlayers :: Square -> Players
-toPlayers X = PlayerX
-toPlayers O = PlayerO
-
-fromPlayers :: Players -> Square
-fromPlayers PlayerX = X
-fromPlayers PlayerO = O
-
-switchPlayers :: Players -> Players
-switchPlayers PlayerX = PlayerO
-switchPlayers PlayerO = PlayerX
-
-
 checkOpenSquare :: Board -> String -> Either String Int
 checkOpenSquare xss s  = case reads s of
 
@@ -82,8 +91,8 @@ checkOpenSquare xss s  = case reads s of
     _         -> Left "Error: Please enter an integer"
 
     where check n
-
-            | n < 1 || n > length xss ^ 2 = Left "Please enter integer in range"
+            -- change n parameters here to modify indices?
+            | n < 1 || n > (length xss) * 7 = Left "Please enter integer in range"
             | xss !! row !! col /= Empty  = Left "Square already taken"
             | otherwise                   = Right n
 
@@ -95,7 +104,7 @@ askInput p board = do
     putStrLn $ displayBoard board
     putStrLn $ show p ++ ", make your move"
 
-    putStr $ "(Enter number 1-" ++ show (length board ^ 2) ++ "): \n"
+    putStr $ "(Enter number 1-" ++ show (length board * 7) ++ "): \n"
     number <- getLine
 
     case checkOpenSquare board number of
@@ -122,16 +131,9 @@ gameStep p board = case checkWinner board of
                 putStrLn "It's a draw"
         else askInput p board
 
-startBoard :: Int -> Board
-startBoard x = replicate x (replicate x Empty)
-
-initialBoard :: IO ()
-initialBoard = putStr $ unlines ["\n",
-                                "Let's begin!"]
-
 -- length of board
 boardSize :: Int
-boardSize = 3
+boardSize = 7
 
 main :: IO ()
 main = do

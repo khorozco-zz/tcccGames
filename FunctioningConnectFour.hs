@@ -29,7 +29,7 @@ type Board = [[Square]]
 -- shows board
 displayBoard :: Board -> String
 displayBoard xs = unlines
-             . surround vertex . map (concat . surround' line . map show) $ xs
+             . surround vertex . map (concat . surround line . map show) $ xs
     where line = "|"
           vertex = "+---+---+---+---+---+---+---" ++ "+"
 
@@ -37,10 +37,6 @@ displayBoard xs = unlines
 surround :: a -> [a] -> [a]
 surround x ys = x : intersperse x ys ++ [x]
 -- returns [x,ys[1],x,ys[2],x,ys[3]]
-
--- used to display correct board
-surround' :: a -> [a] -> [a]
-surround' x ys = x : intersperse x ys
 
 -- players
 data Players = PlayerX | PlayerO deriving (Eq)
@@ -91,7 +87,7 @@ fillSquare xss n s = nth (row+(boardSize - 2)) (nth col (const s)) xss
 
 findRow :: Square -> [Square] -> [Square]
 findRow p (r:rs) = if (r == Empty) then p:rs
-                                   else findRow p rs
+                                   else p : findRow p rs
 
 -- create function that fills squares after checking all rows
 
@@ -147,7 +143,7 @@ gameOver = all (notElem Empty)
 
 -- length of board
 boardSize :: Int
-boardSize = 8
+boardSize = 7
 
 main :: IO ()
 main = do

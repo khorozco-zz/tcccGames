@@ -111,7 +111,7 @@ askInput p board = do
     putStrLn $ displayBoard board
     putStrLn $ show p ++ ", make your move"
 
-    putStr $ "(Enter number 1-" ++ show (length board) ++ "): \n"
+    putStr $ "(Enter number 1-" ++ show (length board + 1) ++ "): \n"
     colNumber <- getLine
 
     case checkOpenSquare board colNumber of

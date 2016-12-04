@@ -2,15 +2,15 @@ module ConnectFour where
 
 import Data.List (transpose, intersperse)
 import Data.Foldable (asum)
-
+import Data.Char (digitToInt)
 -- initial board creation
-initialBoard :: IO ()
-initialBoard = putStr $ unlines ["\n",
-                                "Let's begin!"]
+startMessage :: IO ()
+startMessage = putStr $ unlines ["\n",
+                                "\t Let's begin!"]
 
 -- called in main, where x is the size of the board
 startBoard :: Int -> Board
-startBoard x = replicate (x-1) (replicate x Empty)
+startBoard x = replicate x (replicate (x) Empty)
 
 -- datatype for gameboard squares
 data Square = X
@@ -29,7 +29,7 @@ type Board = [[Square]]
 -- shows board
 displayBoard :: Board -> String
 displayBoard xs = unlines
-             . surround vertex . map (concat . surround line . map show) $ xs
+             . surround vertex . map (concat . surround line . map show) $ reverse (transpose xs)
     where line = "|"
           vertex = "+---+---+---+---+---+---+---" ++ "+"
 
@@ -58,61 +58,67 @@ switchPlayers PlayerX = PlayerO
 switchPlayers PlayerO = PlayerX
 
 checkWinner :: Board -> Maybe Players
-checkWinner yss = asum
-           . map winner
-           $ diag : rev : cols ++ yss
-
-    where cols = transpose yss
-          diag = zipWith (!!) yss          [0..]
-          rev = zipWith (!!) (reverse yss) [0..]
-
-          winner (x:xs) = if all (==x) xs && x /= Empty
+checkWinner ys = asum . map winner $ diag : rev : cols ++ ys
+    where cols = transpose ys
+          diag = zipWith (!!) ys           [0..]
+          rev = zipWith (!!) (reverse ys) [0..]
+          winner (x:y:z:w:xs) = if x /= Empty && (x == y) && (y == z) && (z == w)
                               then Just (toPlayers x)
                               else Nothing
 
--- we should not need this bc we will insert by column number only
 getCoordinates :: Int -> Board -> (Int, Int)
-getCoordinates n = divMod (n-1) . length
+getCoordinates n = divMod (n) . length
 
--- finding the nth value in a list
+
+fillSquare :: Board -> Int -> Square -> Board
+fillSquare b@(x:xs) col currentplayer = if col == 0
+                                        then (findRow currentplayer (b !! col)) : xs
+                                        else x : fillSquare xs (col-1) currentplayer
+
+findRow :: Square -> [Square] -> [Square]
+findRow p (r:rs) = if (r == Empty) then p:rs
+                                   else r : findRow p rs
+
 nth :: Int -> (a -> a) -> [a] -> [a]
 nth _ _ [] = []
 nth 0 f (x:xs) = f x : xs
 nth n f (x:xs) = x : nth (n - 1) f xs
-
-fillSquare :: Board -> Int -> Square -> Board
-fillSquare xss n s = nth (row+(boardSize - 2)) (nth col (const s)) xss
-    -- if row 7 of selected col is filled, recursively check higher rows
-    where (row,col) = getCoordinates n xss
-
-findRow :: Square -> [Square] -> [Square]
-findRow p (r:rs) = if (r == Empty) then p:rs
-                                   else p : findRow p rs
-
+{-}
+findRow' :: Square -> Board -> Int -> Int -> Board
+findRow' p b@(r:rs) rows cols = if (b !! rows !! cols == Empty)
+                                then (nth cols  r) : rs
+                                else findRow' p b (rows-1) cols
+-}
 -- create function that fills squares after checking all rows
 
 checkOpenSquare :: Board -> String -> Either String Int
-checkOpenSquare xss s  = case reads s of
+checkOpenSquare xs s = case reads s of
 
     [(colNumber, "")] -> check colNumber
     _         -> Left "Error: Please enter an integer"
 
     where check colNumber
-            | colNumber < 1 || colNumber > length xss  = Left "Please enter integer in range" -- correct, does not accept input > 8
-            | xss !! colNumber !! 6 /= Empty           = Left "Column already filled"
+            | colNumber < 1 || colNumber > (length xs)
+                    = Left "Please enter integer in range"
+                    -- correct, does not accept input > 8
+            | xs !! colNumber !! 6 /= Empty
+                    = Left "Column already filled"
             -- hard-coded 6, checks if top row is filled, then input is invalid
-            | otherwise                                = Right colNumber
+            | otherwise
+                    = Right colNumber
 
-            where (row, col) = getCoordinates colNumber xss
+            where (row, col) = getCoordinates colNumber xs
 
 askInput :: Players -> Board -> IO ()
 askInput p board = do
 
     putStrLn $ displayBoard board
+    putStr "  1   2   3   4   5   6   7  \n \n"
     putStrLn $ show p ++ ", make your move"
 
-    putStr $ "(Enter number 1-" ++ show (length board + 1) ++ "): \n"
+    putStr $ "(Enter number 1-" ++ show (length board) ++ "): \n"
     colNumber <- getLine
+    putStr "\n"
 
     case checkOpenSquare board colNumber of
 
@@ -120,8 +126,10 @@ askInput p board = do
 
         Right n -> let cell = fromPlayers p
                        next = switchPlayers p
+--                       (row, col) = getCoordinates colNumber board
+                       col = digitToInt (head colNumber) - 1
 
-                   in gameStep next (fillSquare board n cell)
+                   in gameStep next (fillSquare board col cell)
 
 gameStep :: Players -> Board -> IO ()
 gameStep p board = case checkWinner board of
@@ -129,12 +137,14 @@ gameStep p board = case checkWinner board of
     Just winner -> do
 
         putStrLn $ displayBoard board
+        putStr "  1   2   3   4   5   6   7  \n \n"
         putStrLn $ show winner ++ " wins!"
 
     Nothing -> do
         if gameOver board
             then do
                 putStrLn $ displayBoard board
+                putStr "  1   2   3   4   5   6   7  \n \n"
                 putStrLn "It's a draw"
         else askInput p board
 
@@ -147,5 +157,5 @@ boardSize = 7
 
 main :: IO ()
 main = do
-    initialBoard
+    startMessage
     gameStep PlayerX (startBoard boardSize)

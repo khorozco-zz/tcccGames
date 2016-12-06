@@ -58,6 +58,7 @@ switchPlayers :: Players -> Players
 switchPlayers PlayerX = PlayerO
 switchPlayers PlayerO = PlayerX
 
+-- checks all (or should check all) winning patterns/possibilities
 checkWinner :: Board -> Maybe Players
 checkWinner ys = asum . map winner $ diag : rev : cols ++ ys
     where cols = transpose ys
@@ -67,34 +68,25 @@ checkWinner ys = asum . map winner $ diag : rev : cols ++ ys
                               then Just (toPlayers x)
                               else Nothing
 
+-- gets coordinates for all squares in the board
 getCoordinates :: Int -> Board -> (Int, Int)
 getCoordinates n = divMod (n) . length
 
-
+-- inserts into the correct square based on column capacity
 fillSquare :: Board -> Int -> Square -> Board
 fillSquare b@(x:xs) col currentplayer = if col == 0
                                         then (findRow currentplayer (b !! col)) : xs
                                         else x : fillSquare xs (col-1) currentplayer
 
+-- helper function: inserts into first open row of a column
 findRow :: Square -> [Square] -> [Square]
 findRow p (r:rs) 
     | (r == Empty)         = p:rs
     | (r == (last (r:rs))) = r:rs
     | otherwise            = r:findRow p rs
 
-nth :: Int -> (a -> a) -> [a] -> [a]
-nth _ _ [] = []
-nth 0 f (x:xs) = f x : xs
-nth n f (x:xs) = x : nth (n - 1) f xs
-
-{-}
-findRow' :: Square -> Board -> Int -> Int -> Board
-findRow' p b@(r:rs) rows cols = if (b !! rows !! cols == Empty)
-                                then (nth cols  r) : rs
-                                else findRow' p b (rows-1) cols
--}
--- create function that fills squares after checking all rows
-
+-- checks if move is valid
+-- many problems
 checkOpenSquare :: Board -> String -> Either String Int
 checkOpenSquare xs s = case reads s of
 
@@ -106,11 +98,14 @@ checkOpenSquare xs s = case reads s of
                     = Left "Please enter integer in range"
             | xs !! row !! 5 /= Empty
                     = Left "Column already filled"
+            | last (xs !! row) /= Empty
+                    = Left "FILLED"
             | otherwise
                     = Right row
 
             where (row, col) = getCoordinates colNumber xs
 
+-- plays game, asks for input
 askInput :: Players -> Board -> IO ()
 askInput p board = do
 
@@ -133,6 +128,7 @@ askInput p board = do
 
                    in gameStep next (fillSquare board col cell)
 
+-- end of game
 gameStep :: Players -> Board -> IO ()
 gameStep p board = case checkWinner board of
 

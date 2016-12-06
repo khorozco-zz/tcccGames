@@ -11,7 +11,7 @@ startMessage = putStr $ unlines ["\n",
 
 -- called in main, where x is the size of the board
 startBoard :: Int -> Board
-startBoard x = replicate x (replicate (x) Empty)
+startBoard x = replicate x (replicate (x-1) Empty)
 
 -- datatype for gameboard squares
 data Square = X
@@ -79,7 +79,7 @@ fillSquare b@(x:xs) col currentplayer = if col == 0
 findRow :: Square -> [Square] -> [Square]
 findRow p (r:rs) 
     | (r == Empty)         = p:rs
-    | (r == (last (r:rs))) = (r:rs)
+    | (r == (last (r:rs))) = r:rs
     | otherwise            = r:findRow p rs
 
 nth :: Int -> (a -> a) -> [a] -> [a]
@@ -104,10 +104,8 @@ checkOpenSquare xs s = case reads s of
     where check colNumber
             | colNumber < 0 || colNumber > (length xs)
                     = Left "Please enter integer in range"
-                    -- correct, does not accept input > 8
-            | xs !! row !! 6 /= Empty
+            | xs !! row !! 5 /= Empty
                     = Left "Column already filled"
-            -- hard-coded 6, checks if top row is filled, then input is invalid
             | otherwise
                     = Right row
 
@@ -149,7 +147,7 @@ gameStep p board = case checkWinner board of
             then do
                 putStrLn $ displayBoard board
                 putStr "  1   2   3   4   5   6   7  \n \n"
-                putStrLn "It's a draw"
+                putStrLn "\t It's a draw! \n"
         else askInput p board
 
 gameOver :: Board -> Bool

@@ -3,6 +3,7 @@ module ConnectFour where
 import Data.List (transpose, intersperse)
 import Data.Foldable (asum)
 import Data.Char (digitToInt)
+
 -- initial board creation
 startMessage :: IO ()
 startMessage = putStr $ unlines ["\n",
@@ -61,7 +62,7 @@ checkWinner :: Board -> Maybe Players
 checkWinner ys = asum . map winner $ diag : rev : cols ++ ys
     where cols = transpose ys
           diag = zipWith (!!) ys           [0..]
-          rev = zipWith (!!) (reverse ys) [0..]
+          rev  = zipWith (!!) (reverse ys) [0..]
           winner (x:y:z:w:xs) = if x /= Empty && (x == y) && (y == z) && (z == w)
                               then Just (toPlayers x)
                               else Nothing
@@ -76,13 +77,16 @@ fillSquare b@(x:xs) col currentplayer = if col == 0
                                         else x : fillSquare xs (col-1) currentplayer
 
 findRow :: Square -> [Square] -> [Square]
-findRow p (r:rs) = if (r == Empty) then p:rs
-                                   else r : findRow p rs
+findRow p (r:rs) 
+    | (r == Empty)         = p:rs
+    | (r == (last (r:rs))) = (r:rs)
+    | otherwise            = r:findRow p rs
 
 nth :: Int -> (a -> a) -> [a] -> [a]
 nth _ _ [] = []
 nth 0 f (x:xs) = f x : xs
 nth n f (x:xs) = x : nth (n - 1) f xs
+
 {-}
 findRow' :: Square -> Board -> Int -> Int -> Board
 findRow' p b@(r:rs) rows cols = if (b !! rows !! cols == Empty)
@@ -98,14 +102,14 @@ checkOpenSquare xs s = case reads s of
     _         -> Left "Error: Please enter an integer"
 
     where check colNumber
-            | colNumber < 1 || colNumber > (length xs)
+            | colNumber < 0 || colNumber > (length xs)
                     = Left "Please enter integer in range"
                     -- correct, does not accept input > 8
-            | xs !! colNumber !! 6 /= Empty
+            | xs !! row !! 6 /= Empty
                     = Left "Column already filled"
             -- hard-coded 6, checks if top row is filled, then input is invalid
             | otherwise
-                    = Right colNumber
+                    = Right row
 
             where (row, col) = getCoordinates colNumber xs
 
@@ -138,7 +142,7 @@ gameStep p board = case checkWinner board of
 
         putStrLn $ displayBoard board
         putStr "  1   2   3   4   5   6   7  \n \n"
-        putStrLn $ show winner ++ " wins!"
+        putStrLn $ "\t" ++ show winner ++ " wins! \n"
 
     Nothing -> do
         if gameOver board

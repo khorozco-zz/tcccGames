@@ -89,21 +89,20 @@ findRow p (r:rs)
 -- many problems
 checkOpenSquare :: Board -> String -> Either String Int
 checkOpenSquare xs s = case reads s of
+-- xs = board, s = colNumber (user input)
 
-    [(colNumber, "")] -> check colNumber
-    _         -> Left "Error: Please enter an integer"
+    [(colNumber, _)] -> check colNumber
+    _                -> Left "Error: Please enter an integer"
 
     where check colNumber
-            | colNumber < 0 || colNumber > (length xs)
+            | colNumber <= 0 || colNumber > (length xs)
                     = Left "Please enter integer in range"
-            | xs !! row !! 5 /= Empty
+            | (xs !! (colNumber-1) !! 5) /= Empty
                     = Left "Column already filled"
-            | last (xs !! row) /= Empty
-                    = Left "FILLED"
             | otherwise
                     = Right row
 
-            where (row, col) = getCoordinates colNumber xs
+            where (row, col) = getCoordinates (colNumber-1) xs
 
 -- plays game, asks for input
 askInput :: Players -> Board -> IO ()
@@ -127,6 +126,7 @@ askInput p board = do
                        col = digitToInt (head colNumber) - 1
 
                    in gameStep next (fillSquare board col cell)
+                   -- check what switching row/col here doeshh
 
 -- end of game
 gameStep :: Players -> Board -> IO ()

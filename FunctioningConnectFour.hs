@@ -32,7 +32,7 @@ displayBoard :: Board -> String
 displayBoard xs = unlines
              . surround vertex . map (concat . surround line . map show) $ reverse (transpose xs)
     where line = "|"
-          vertex = "+---+---+---+---+---+---+---+"
+          vertex = "+---+---+---+---+---+---+---" ++ "+"
 
 -- surrounds every element of ys between x values
 surround :: a -> [a] -> [a]
@@ -59,25 +59,14 @@ switchPlayers PlayerX = PlayerO
 switchPlayers PlayerO = PlayerX
 
 -- checks all (or should check all) winning patterns/possibilities
-checkWinner :: Board -> Maybe Square
---checkWinner ys = fourInARow (concat ys)
---checkWinner ys = asum (map fourInARow (diag ++ rev ++ cols))  -- deleted ++ys
--- ys = board
-checkWinner ys = fourInARow (cols ++ diag ++ rev ++ (concat ys)) -- split lists by cols, diag, rev
-    where cols = concat (transpose ys)
-          diag = zipWith (!!) ys           [0..5]
-          rev  = zipWith (!!) (reverse ys) [0..5]
-
--- should eliminate game ending upon appearance of empty board (but did not)
---allFilled :: [Square] -> Bool
---allFilled (w:x:y:z:zs) = if (w /= Empty && x /= Empty && y /= Empty && z /= Empty) then True
---                                                                        else False
-
--- sees if there is a pattern of four in a row
-fourInARow :: [Square] -> Maybe Square
-fourInARow (x:xs) = if (xs == []) then Nothing
-                    else if ((x == (head xs)) && ((head xs) == (head (tail xs))) && ((head (tail xs)) == (head (tail (tail xs)))) && x /= Empty && (head xs) /= Empty && (head (tail xs)) /= Empty && (head (tail (tail xs))) /= Empty) then Just (x)
-                    else fourInARow xs
+checkWinner :: Board -> Maybe Players
+checkWinner ys = asum . map winner $ diag : rev : cols ++ ys
+    where cols = transpose ys
+          diag = zipWith (!!) ys           [0..]
+          rev  = zipWith (!!) (reverse ys) [0..]
+          winner (x:y:z:w:xs) = if x /= Empty && (x == y) && (y == z) && (z == w)
+                              then Just (toPlayers x)
+                              else Nothing
 
 -- gets coordinates for all squares in the board
 getCoordinates :: Int -> Board -> (Int, Int)
@@ -97,8 +86,10 @@ findRow p (r:rs)
     | otherwise            = r:findRow p rs
 
 -- checks if move is valid
+-- many problems
 checkOpenSquare :: Board -> String -> Either String Int
 checkOpenSquare xs s = case reads s of
+-- xs = board, s = colNumber (user input)
 
     [(colNumber, _)] -> check colNumber
     _                -> Left "Error: Please enter an integer"

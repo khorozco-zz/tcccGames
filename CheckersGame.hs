@@ -23,10 +23,10 @@ startBoard = [[X, Empty, X, Empty, Empty, Empty, O, Empty],
 -- datatype for gameboard squares and row numbers
 data Square = X
             | O
-            | XX
-            | OO
+            | XX -- kings
+            | OO -- kings
             | Empty
-            | One | Two | Three | Four | Five | Six | Seven | Eight
+            | One | Two | Three | Four | Five | Six | Seven | Eight -- row num
     deriving (Eq)
 
 instance Show Square where
@@ -50,7 +50,8 @@ type Board = [[Square]]
 -- shows board
 displayBoard :: Board -> String
 displayBoard xs = unlines
-             . surround vertex . map (concat . surround line . map show) $ reverse (transpose xs)
+             . surround vertex . map (concat . surround line . map show)
+             $ reverse (transpose xs)
     where line = "|"
           vertex = "+---+---+---+---+---+---+---+---+"
 
@@ -86,48 +87,45 @@ checkWinner ys = asum . map winner $ ys
                             then Just (toPlayers x)
                             else Nothing
 
-getCoordinates :: Int -> Board -> (Int, Int)
-getCoordinates n = divMod (n) . length
-
-
+-- takes current board, person's input, current player and outputs new board
 fillSquare :: Board -> String -> Square -> Board
 fillSquare b playerInput currentplayer = do
     let fromLetter = if (playerInput !! 0 == 'A')
-                        then 0
-                        else if (playerInput !! 0 == 'B')
-                            then 1
-                            else if (playerInput !! 0 == 'C')
-                                then 2
-                                else if (playerInput !! 0 == 'D')
-                                    then 3
-                                    else if (playerInput !! 0 == 'E')
-                                        then 4
-                                        else if (playerInput !! 0 == 'F')
-                                            then 5
-                                            else if (playerInput !! 0 == 'G')
-                                                then 6
-                                                else if (playerInput !! 0 == 'H')
-                                                    then 7
-                                                    else 0
+                    then 0
+                    else if (playerInput !! 0 == 'B')
+                        then 1
+                        else if (playerInput !! 0 == 'C')
+                            then 2
+                            else if (playerInput !! 0 == 'D')
+                                then 3
+                                else if (playerInput !! 0 == 'E')
+                                    then 4
+                                    else if (playerInput !! 0 == 'F')
+                                        then 5
+                                        else if (playerInput !! 0 == 'G')
+                                            then 6
+                                            else if (playerInput !! 0 == 'H')
+                                                then 7
+                                                else 0
         fromInt = digitToInt (playerInput !! 1)
 
         toLetter = if (playerInput !! 3 == 'A')
-             then 0
-             else if (playerInput !! 3 == 'B')
-                 then 1
-                 else if (playerInput !! 3 == 'C')
-                     then 2
-                     else if (playerInput !! 3 == 'D')
-                         then 3
-                         else if (playerInput !! 3 == 'E')
-                             then 4
-                             else if (playerInput !! 3 == 'F')
-                                 then 5
-                                 else if (playerInput !! 3 == 'G')
-                                     then 6
-                                     else if (playerInput !! 3 == 'H')
-                                         then 7
-                                         else 0
+                 then 0
+                 else if (playerInput !! 3 == 'B')
+                     then 1
+                     else if (playerInput !! 3 == 'C')
+                         then 2
+                         else if (playerInput !! 3 == 'D')
+                             then 3
+                             else if (playerInput !! 3 == 'E')
+                                 then 4
+                                 else if (playerInput !! 3 == 'F')
+                                     then 5
+                                     else if (playerInput !! 3 == 'G')
+                                         then 6
+                                         else if (playerInput !! 3 == 'H')
+                                             then 7
+                                             else 0
         toInt = digitToInt (playerInput !! 4)
         in movePieces b currentplayer fromLetter fromInt toLetter toInt
 
